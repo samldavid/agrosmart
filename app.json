@@ -1,0 +1,38 @@
+{
+  "expo": {
+    "name": "AgroSmart",
+    "slug": "agrosmart",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "scheme": "agrosmart",
+    "userInterfaceStyle": "light",
+    "assetBundlePatterns": ["**/*"],
+    "icon": "./assets/brand/agrosmart-logo.png",
+    "splash": {
+      "image": "./assets/brand/agrosmart-logo.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#F6F2E8"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.agrosmart.mvp"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/brand/agrosmart-logo.png",
+        "backgroundColor": "#F6F2E8"
+      },
+      "package": "com.agrosmart.mvp"
+    },
+    "web": {
+      "bundler": "metro",
+      "favicon": "./assets/brand/agrosmart-logo.png"
+    },
+    "plugins": ["expo-router", "expo-font", "expo-secure-store"],
+    "extra": {
+      "router": {
+        "origin": false
+      }
+    }
+  }
+}
