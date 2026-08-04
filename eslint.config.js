@@ -3,7 +3,7 @@ const expoConfig = require("eslint-config-expo/flat");
 module.exports = [
   ...expoConfig,
   {
-    ignores: ["node_modules/**", "node_modules_broken_*/**", "dist/**", ".expo/**", "coverage/**"]
+    ignores: ["node_modules/**", "node_modules_broken_*/**", "dist/**", ".expo/**", ".vercel/**", "coverage/**"]
   },
   {
     rules: {

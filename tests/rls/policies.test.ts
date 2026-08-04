@@ -1,7 +1,12 @@
-import { readFileSync } from "node:fs";
+import { readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 
-const sql = readFileSync(join(process.cwd(), "supabase/migrations/20260802000000_initial_schema.sql"), "utf8");
+const migrationsDir = join(process.cwd(), "supabase/migrations");
+const sql = readdirSync(migrationsDir)
+  .filter((file) => file.endsWith(".sql"))
+  .sort()
+  .map((file) => readFileSync(join(migrationsDir, file), "utf8"))
+  .join("\n");
 
 describe("contratos criticos de RLS", () => {
   it("activa RLS en tablas sensibles", () => {
@@ -27,6 +32,10 @@ describe("contratos criticos de RLS", () => {
   it("impide que productores consulten otras fincas", () => {
     expect(sql).toContain("farms_select_members");
     expect(sql).toContain("app_private.is_farm_member(id)");
+  });
+
+  it("permite que el propietario lea la finca que acaba de crear", () => {
+    expect(sql).toContain("owner_id = (select auth.uid())");
   });
 
   it("impide que trabajadores eliminen o modifiquen configuraciones criticas de finca", () => {

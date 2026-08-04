@@ -1,6 +1,8 @@
+.git/
+.vercel/
+.expo/
 node_modules/
 node_modules_broken_*/
-.expo/
 dist/
 coverage/
 .env
@@ -13,5 +15,3 @@ pnpm-debug.log*
 package-lock.broken.*.json
 *.tsbuildinfo
 .DS_Store
-.vercel/
-supabase/.temp/
