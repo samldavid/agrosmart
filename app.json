@@ -31,6 +31,10 @@
     },
     "plugins": ["expo-router", "expo-font", "expo-secure-store"],
     "extra": {
+      "EXPO_PUBLIC_SUPABASE_URL": "https://ibsilwjemmrdiyumaudl.supabase.co",
+      "EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY": "sb_publishable_cySiHMuANOdTkpeyO-765w_NjuXLJ22",
+      "EXPO_PUBLIC_APP_TIME_ZONE": "America/Bogota",
+      "EXPO_PUBLIC_APP_LOCALE": "es-CO",
       "router": {
         "origin": false
       }
