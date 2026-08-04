@@ -1,4 +1,4 @@
-import { Link, Slot, usePathname, router } from "expo-router";
+import { Slot, usePathname, router, type Href } from "expo-router";
 import {
   Bell,
   ClipboardList,
@@ -112,14 +112,16 @@ export function AppShell({ children }: PropsWithChildren) {
 
 function NavLink({ item, active, compact = false }: { item: NavItem; active: boolean; compact?: boolean }) {
   return (
-    <Link href={item.href} asChild>
-      <Pressable accessibilityRole="link" style={[compact ? styles.bottomItem : styles.navItem, active ? styles.navActive : null]}>
-        <View>{item.icon}</View>
-        <AppText variant="caption" color={active ? colors.forestDark : colors.mutedText}>
-          {item.label}
-        </AppText>
-      </Pressable>
-    </Link>
+    <Pressable
+      accessibilityRole="link"
+      onPress={() => router.push(item.href as Href)}
+      style={[compact ? styles.bottomItem : styles.navItem, active ? styles.navActive : null]}
+    >
+      <View>{item.icon}</View>
+      <AppText variant="caption" color={active ? colors.forestDark : colors.mutedText}>
+        {item.label}
+      </AppText>
+    </Pressable>
   );
 }
 
