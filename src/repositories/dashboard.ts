@@ -12,7 +12,7 @@ export async function getDashboardSummary(farmId: string): Promise<DashboardSumm
   const [
     activeAnimals,
     products,
-    lowStockProducts,
+    productsStock,
     pendingTasks,
     upcomingReminders,
     openTickets,
@@ -20,11 +20,7 @@ export async function getDashboardSummary(farmId: string): Promise<DashboardSumm
   ] = await Promise.all([
     supabase.from("animals").select("id", { count: "exact", head: true }).eq("farm_id", farmId).eq("status", "active"),
     supabase.from("agricultural_products").select("id", { count: "exact", head: true }).eq("farm_id", farmId),
-    supabase
-      .from("agricultural_products")
-      .select("id", { count: "exact", head: true })
-      .eq("farm_id", farmId)
-      .lte("current_stock", "minimum_stock"),
+    supabase.from("agricultural_products").select("id,current_stock,minimum_stock").eq("farm_id", farmId),
     supabase
       .from("tasks")
       .select("id", { count: "exact", head: true })
@@ -49,7 +45,7 @@ export async function getDashboardSummary(farmId: string): Promise<DashboardSumm
   const possibleErrors = [
     activeAnimals.error,
     products.error,
-    lowStockProducts.error,
+    productsStock.error,
     pendingTasks.error,
     upcomingReminders.error,
     openTickets.error,
@@ -61,11 +57,12 @@ export async function getDashboardSummary(farmId: string): Promise<DashboardSumm
   }
 
   const financialRows = (finances.data ?? []) as Array<{ type: "income" | "expense"; amount: number }>;
+  const productsStockRows = (productsStock.data ?? []) as Array<{ current_stock: number; minimum_stock: number }>;
 
   return {
     activeAnimals: activeAnimals.count ?? 0,
     products: products.count ?? 0,
-    lowStockProducts: lowStockProducts.count ?? 0,
+    lowStockProducts: productsStockRows.filter((row) => row.current_stock <= row.minimum_stock).length,
     pendingTasks: pendingTasks.count ?? 0,
     upcomingReminders: upcomingReminders.count ?? 0,
     openTickets: openTickets.count ?? 0,
