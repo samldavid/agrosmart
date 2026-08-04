@@ -26,6 +26,7 @@
     },
     "web": {
       "bundler": "metro",
+      "output": "single",
       "favicon": "./assets/brand/agrosmart-logo.png"
     },
     "plugins": ["expo-router", "expo-font", "expo-secure-store"],

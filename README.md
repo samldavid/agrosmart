@@ -88,6 +88,21 @@ Build estatica:
 npm run build
 ```
 
+## Vercel
+
+El repo incluye `vercel.json` para compilar Expo web como SPA y publicar `dist`.
+
+Configura estas variables en Vercel antes del deploy:
+
+```bash
+EXPO_PUBLIC_SUPABASE_URL=https://ibsilwjemmrdiyumaudl.supabase.co
+EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY=sb_publishable_cySiHMuANOdTkpeyO-765w_NjuXLJ22
+EXPO_PUBLIC_APP_TIME_ZONE=America/Bogota
+EXPO_PUBLIC_APP_LOCALE=es-CO
+```
+
+No agregues `service_role` ni claves secretas al frontend.
+
 ## Documentacion
 
 - [PLAN.md](PLAN.md)
