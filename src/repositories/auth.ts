@@ -1,6 +1,4 @@
-import type { User } from "@supabase/supabase-js";
-
-import { toAppError } from "@/lib/errors";
+import { AppError, toAppError } from "@/lib/errors";
 import { getSupabase } from "@/lib/supabase";
 import type { ProfileValues, RecoverPasswordValues, SignInValues, SignUpValues } from "@/schemas/forms";
 import type { Profile } from "@/types/domain";
@@ -15,20 +13,24 @@ export async function signIn(values: SignInValues): Promise<void> {
   }
 }
 
-export async function signUp(values: SignUpValues): Promise<User | null> {
-  const { data, error } = await getSupabase().auth.signUp({
-    email: values.email,
-    password: values.password,
-    options: {
-      data: {
-        full_name: values.full_name
-      }
-    }
+export async function signUp(values: SignUpValues): Promise<void> {
+  const supabase = getSupabase();
+  const { error } = await supabase.functions.invoke("public-sign-up", {
+    body: values
   });
+
   if (error) {
-    throw toAppError(error);
+    throw await toFunctionAppError(error);
   }
-  return data.user;
+
+  const { error: signInError } = await supabase.auth.signInWithPassword({
+    email: values.email,
+    password: values.password
+  });
+
+  if (signInError) {
+    throw toAppError(signInError, "Cuenta creada. Inicia sesion con tu correo y contrasena.");
+  }
 }
 
 export async function recoverPassword(values: RecoverPasswordValues): Promise<void> {
@@ -57,4 +59,21 @@ export async function updateProfile(values: ProfileValues): Promise<Profile> {
   }
 
   return data as Profile;
+}
+
+async function toFunctionAppError(error: unknown): Promise<AppError> {
+  const context = (error as { context?: Response }).context;
+
+  if (context) {
+    try {
+      const body = (await context.clone().json()) as { error?: unknown };
+      if (typeof body.error === "string" && body.error.trim().length > 0) {
+        return new AppError(body.error);
+      }
+    } catch {
+      // Fall through to the generic Supabase error mapper.
+    }
+  }
+
+  return toAppError(error);
 }

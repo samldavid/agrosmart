@@ -1,8 +1,8 @@
 import { Link, router } from "expo-router";
-import { Check, Leaf, Lock, Mail } from "lucide-react-native";
-import { useState } from "react";
+import { Check, Leaf, Lock, UserPlus } from "lucide-react-native";
+import type { PropsWithChildren } from "react";
 import { Controller, useForm } from "react-hook-form";
-import { Image, Pressable, StyleSheet, View } from "react-native";
+import { Image, KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, View } from "react-native";
 import { useMutation } from "@tanstack/react-query";
 
 import { ErrorState, LoadingState } from "@/components/feedback/States";
@@ -10,13 +10,11 @@ import { TextField } from "@/components/forms/TextField";
 import { AppText } from "@/components/primitives/AppText";
 import { Button } from "@/components/primitives/Button";
 import { Card } from "@/components/primitives/Card";
-import { recoverPassword, signIn, signUp } from "@/repositories/auth";
+import { signIn, signUp } from "@/repositories/auth";
 import { formResolver } from "@/lib/formResolver";
 import {
-  recoverPasswordSchema,
   signInSchema,
   signUpSchema,
-  type RecoverPasswordValues,
   type SignInValues,
   type SignUpValues
 } from "@/schemas/forms";
@@ -52,7 +50,7 @@ export function MissingConfigurationScreen() {
 
 export function WelcomeScreen() {
   return (
-    <View style={styles.authScreen}>
+    <AuthFrame>
       <Card style={styles.authCard}>
         <Image source={require("../../../assets/brand/agrosmart-logo.png")} style={styles.heroLogo} accessibilityLabel="Logo AgroSmart" />
         <AppText variant="display" style={styles.brand}>
@@ -69,7 +67,7 @@ export function WelcomeScreen() {
         <Button title="Crear cuenta" onPress={() => router.push("/(auth)/sign-up")} fullWidth />
         <Button title="Ya tengo cuenta" onPress={() => router.push("/(auth)/sign-in")} variant="secondary" fullWidth />
       </Card>
-    </View>
+    </AuthFrame>
   );
 }
 
@@ -93,7 +91,7 @@ export function SignInScreen() {
   });
 
   return (
-    <View style={styles.authScreen}>
+    <AuthFrame>
       <Card style={styles.authCard}>
         <AuthTitle title="Iniciar sesion" subtitle="Ingresa con tu correo y contrasena." />
         <Controller
@@ -129,13 +127,6 @@ export function SignInScreen() {
         />
         {mutation.isError ? <AppText color={colors.error}>{String(mutation.error.message)}</AppText> : null}
         <Button title="Entrar" icon={<Lock color={colors.white} size={18} />} loading={mutation.isPending} onPress={form.handleSubmit((values) => mutation.mutate(values))} fullWidth />
-        <Link href="/(auth)/forgot-password" asChild>
-          <Pressable accessibilityRole="link">
-            <AppText color={colors.forest} style={styles.linkText}>
-              Olvide mi contrasena
-            </AppText>
-          </Pressable>
-        </Link>
         <Link href="/(auth)/sign-up" asChild>
           <Pressable accessibilityRole="link">
             <AppText color={colors.forest} style={styles.linkText}>
@@ -144,27 +135,22 @@ export function SignInScreen() {
           </Pressable>
         </Link>
       </Card>
-    </View>
+    </AuthFrame>
   );
 }
 
 export function SignUpScreen() {
-  const [registered, setRegistered] = useState(false);
   const form = useForm<SignUpValues>({
     resolver: formResolver(signUpSchema),
     defaultValues: { email: "", password: "", full_name: "", accepted_privacy: false }
   });
   const mutation = useMutation({
     mutationFn: signUp,
-    onSuccess: () => setRegistered(true)
+    onSuccess: () => router.replace("/")
   });
 
-  if (registered) {
-    return <VerifyEmailScreen />;
-  }
-
   return (
-    <View style={styles.authScreen}>
+    <AuthFrame>
       <Card style={styles.authCard}>
         <AuthTitle title="Crear cuenta" subtitle="Registra tu acceso principal a AgroSmart." />
         <Controller
@@ -213,7 +199,7 @@ export function SignUpScreen() {
           </AppText>
         ) : null}
         {mutation.isError ? <AppText color={colors.error}>{String(mutation.error.message)}</AppText> : null}
-        <Button title="Registrarme" icon={<Mail color={colors.white} size={18} />} loading={mutation.isPending} onPress={form.handleSubmit((values) => mutation.mutate(values))} fullWidth />
+        <Button title="Registrarme" icon={<UserPlus color={colors.white} size={18} />} loading={mutation.isPending} onPress={form.handleSubmit((values) => mutation.mutate(values))} fullWidth />
         <Link href="/(auth)/privacy" asChild>
           <Pressable accessibilityRole="link">
             <AppText color={colors.forest} style={styles.linkText}>
@@ -222,59 +208,41 @@ export function SignUpScreen() {
           </Pressable>
         </Link>
       </Card>
-    </View>
+    </AuthFrame>
   );
 }
 
 export function ForgotPasswordScreen() {
-  const [sent, setSent] = useState(false);
-  const form = useForm<RecoverPasswordValues>({
-    resolver: formResolver(recoverPasswordSchema),
-    defaultValues: { email: "" }
-  });
-  const mutation = useMutation({
-    mutationFn: recoverPassword,
-    onSuccess: () => setSent(true)
-  });
-
   return (
-    <View style={styles.authScreen}>
+    <AuthFrame>
       <Card style={styles.authCard}>
-        <AuthTitle title="Recuperar contrasena" subtitle="Te enviaremos un enlace para restablecer el acceso." />
-        <Controller
-          control={form.control}
-          name="email"
-          render={({ field, fieldState }) => (
-            <TextField label="Correo electronico" placeholder="correo@ejemplo.com" value={field.value} onChangeText={field.onChange} onBlur={field.onBlur} error={fieldState.error?.message} keyboardType="email-address" autoCapitalize="none" />
-          )}
-        />
-        {sent ? (
-          <AppText color={colors.success}>Revisa tu correo. Si existe una cuenta, recibiras instrucciones.</AppText>
-        ) : null}
-        {mutation.isError ? <AppText color={colors.error}>{String(mutation.error.message)}</AppText> : null}
-        <Button title="Enviar enlace" loading={mutation.isPending} onPress={form.handleSubmit((values) => mutation.mutate(values))} fullWidth />
+        <AuthTitle title="Recuperar contrasena" subtitle="La recuperacion por correo estara disponible mas adelante." />
+        <AppText color={colors.mutedText}>
+          Por ahora, solicita ayuda al administrador de la cuenta para cambiar tu acceso.
+        </AppText>
+        <Button title="Volver a iniciar sesion" onPress={() => router.replace("/(auth)/sign-in")} fullWidth />
       </Card>
-    </View>
+    </AuthFrame>
   );
 }
 
 export function VerifyEmailScreen() {
   return (
-    <View style={styles.authScreen}>
+    <AuthFrame>
       <Card style={styles.authCard}>
-        <AuthTitle title="Verifica tu correo" subtitle="Supabase enviara un enlace de confirmacion si la verificacion esta activa." />
+        <AuthTitle title="Cuenta creada" subtitle="Ya puedes iniciar sesion y continuar con tu finca." />
         <AppText color={colors.mutedText}>
-          Cuando confirmes tu correo, vuelve a iniciar sesion para completar tu perfil y crear la finca.
+          Si ya tienes una sesion activa, AgroSmart te llevara automaticamente al siguiente paso.
         </AppText>
         <Button title="Ir a iniciar sesion" onPress={() => router.replace("/(auth)/sign-in")} fullWidth />
       </Card>
-    </View>
+    </AuthFrame>
   );
 }
 
 export function PrivacyScreen() {
   return (
-    <View style={styles.authScreen}>
+    <AuthFrame>
       <Card style={styles.authCard}>
         <AuthTitle title="Politica de privacidad" subtitle="Version inicial para el MVP de AgroSmart." />
         <AppText color={colors.mutedText}>
@@ -287,7 +255,7 @@ export function PrivacyScreen() {
         </AppText>
         <Button title="Entendido" onPress={() => router.back()} fullWidth />
       </Card>
-    </View>
+    </AuthFrame>
   );
 }
 
@@ -313,12 +281,33 @@ export function AuthLoading() {
   return <LoadingState title="Preparando AgroSmart" />;
 }
 
+function AuthFrame({ children }: PropsWithChildren) {
+  return (
+    <KeyboardAvoidingView style={styles.authScreen} behavior={Platform.OS === "ios" ? "padding" : undefined}>
+      <ScrollView
+        style={styles.authScrollView}
+        contentContainerStyle={styles.authScroll}
+        keyboardShouldPersistTaps="handled"
+      >
+        {children}
+      </ScrollView>
+    </KeyboardAvoidingView>
+  );
+}
+
 const styles = StyleSheet.create({
   authScreen: {
     flex: 1,
+    backgroundColor: colors.cream
+  },
+  authScrollView: {
+    flex: 1,
+    width: "100%"
+  },
+  authScroll: {
+    flexGrow: 1,
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: colors.cream,
     padding: spacing.md
   },
   centerScreen: {
